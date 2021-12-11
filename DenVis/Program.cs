@@ -25,6 +25,7 @@ namespace DenVis
 		// Capture
 		public static WasapiLoopbackCapture soundIn;
 
+		// Shared
 		public static float[] soundData;
 
 		public static void Main()
