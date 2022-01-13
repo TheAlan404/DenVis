@@ -28,7 +28,7 @@ namespace DenVis
 		public static GraphicsWindow graphicsWindow;
 		public static int screenW = Utils.GetDisplay().Item1;
 		public static int screenH = Utils.GetDisplay().Item2;
-		public static float heightMultiplier = 100; // Program: im sensitive uwu
+		public static float heightMultiplier = 20000; // Program: im sensitive uwu
 		public static bool IsOnTopOfTaskbar = true;
 		public static float yOffset = 220 + (IsOnTopOfTaskbar ? 38 : 0);
 		public static float pointDistance = ((int)fftSize) / screenW;
@@ -48,6 +48,11 @@ namespace DenVis
 		// Shared
 		public static float[] soundData;
 		public static bool _initialized = false;
+
+
+		// Other Stuff
+		public static double lastHue = 0;
+		public static float[][] dataHistory = new float[50][];
 
 		public static void Main()
 		{
@@ -98,6 +103,7 @@ namespace DenVis
 			Console.WriteLine($"GraphicsSetup done");
 		}
 
+		public static int setIndx = 0;
 		public static void Render(object _, DrawGraphicsEventArgs e)
 		{
 			if (!_initialized) return;
@@ -109,20 +115,60 @@ namespace DenVis
 			float[] data = new float[(int)fftSize];
 
 			fftProvider.GetFftData(data);
+			float [] dataPart = new ArraySegment<float>(data, 0, screenW).ToArray();
 
-			float maxValue = data.Max();
-			if (maxValue < 0.0001) Array.Fill(data, 0f);
 
-			data = Normalize(data);
+			// azıcık olan c# bilgim yetmedi
+			//dataHistory[setIndx = (setIndx + 1 % 50)] = dataPart;
 
-			StringBuilder sb = new StringBuilder();
+			//float k = 0;
+			//for (int i = 0; i < dataHistory.Length; i++)
+   //         {
+			//	if (dataHistory[i] != null)
+   //             {
+			//		float c = 0;
+			//		for (int j = 0; j < dataHistory[i].Length; j++)
+			//		{
+			//			c += dataHistory[i][j];
+			//		}
+			//		k += c / dataHistory[i].Length;
+			//	}
+				
+
+			//}
+			//k /= 50;
+			//Console.WriteLine(k);
+			
+			if (dataPart.Max() < 0.001) Array.Fill(data, 0f);
+
 
 			
 
+			data = Normalize(dataPart);
+
+			StringBuilder sb = new StringBuilder();
+
+			float bassSum = 0;
+			for (int i = 0; i < 16; i++)
+			{
+				bassSum = dataPart[i];
+			}
+
+			bassSum /= 16;
+
+
+			
+
+			
+
+
 			float previousValue = 0f;
 			float xPosition = pointDistance;
-			foreach(float value in data)
+
+			float ij = 0;
+			foreach(float value in dataPart)
 			{
+				ij++;
 				gfx.DrawLine(Brush,
 					// start x
 					xPosition - pointDistance,
@@ -137,19 +183,25 @@ namespace DenVis
 					5
 				);
 
-				// sorry for my shitcode
-				//(float r, float g, float b) nextColor = Utils.AddHueToColor(Brush.Color.R, Brush.Color.G, Brush.Color.B);
-				//Brush.Color = new Color(nextColor.r, nextColor.g, nextColor.b);
-				//var c = System.Drawing.Color.FromArgb(255, ConvColor(Brush.Color.R), ConvColor(Brush.Color.G), ConvColor(Brush.Color.B));
-				//var nextColor = ColorScale.ColorFromHSL((c.GetHue() + 1) % 360, c.GetSaturation(), c.GetBrightness());
-				//Brush.Color = new Color(nextColor.R, nextColor.G, nextColor.B);
-				//Console.WriteLine(nextColor);
+				//gfx.DrawText(Font, Brush, 10, ij * 10, value.ToString());
 
-				//sb.AppendLine(value.ToString("N2"));
 
-				xPosition += pointDistance;
+				//lastHue += 0.001;
+
+				if (lastHue > 1) lastHue = lastHue % 1;
+				System.Drawing.Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
+				
+				
+				Brush.Color = new Color(c.R, c.G, c.B);
+                
+
+                xPosition += pointDistance;
 				previousValue = value;
 			}
+
+
+			if (bassSum > 0.02) lastHue += bassSum;
+
 
 			// why stop ._.
 
@@ -169,11 +221,6 @@ namespace DenVis
 			{
 				float ratio = values.Max() / by;
 				return values.Select(i => i / ratio).ToArray();
-			}
-
-			int ConvColor(float f)
-			{
-				return (int)(f * 255);
 			}
 
 			// ah yes console log death
