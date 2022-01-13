@@ -139,7 +139,7 @@ namespace DenVis
 			//k /= 50;
 			//Console.WriteLine(k);
 			
-			if (k < 0.001) Array.Fill(data, 0f);
+			if (dataPart.Max() < 0.001) Array.Fill(data, 0f);
 
 
 			
