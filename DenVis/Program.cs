@@ -28,11 +28,11 @@ namespace DenVis
 		public static GraphicsWindow graphicsWindow;
 		public static int screenW = Utils.GetDisplay().Item1;
 		public static int screenH = Utils.GetDisplay().Item2;
-		public static float heightMultiplier = 20000; // Program: im sensitive uwu
+		public static float heightMultiplier = 100; // Program: im sensitive uwu
 		public static bool IsOnTopOfTaskbar = true;
 		public static float yOffset = 220 + (IsOnTopOfTaskbar ? 38 : 0);
 		public static float pointDistance = ((int)fftSize) / screenW;
-		public static int maxHeight = 500;
+		public static int maxHeight = 300;
 
 		
 
@@ -139,12 +139,12 @@ namespace DenVis
 			//k /= 50;
 			//Console.WriteLine(k);
 			
-			if (dataPart.Max() < 0.001) Array.Fill(data, 0f);
+			if (dataPart.Max() < 0.001) Array.Fill(dataPart, 0f);
 
 
 			
 
-			data = Normalize(dataPart);
+			dataPart = Normalize(dataPart);
 
 			StringBuilder sb = new StringBuilder();
 
