@@ -82,7 +82,7 @@ namespace DenVis
 			{
 				var gfx = e.Graphics;
 				if (e.RecreateResources) Brush.Dispose();
-				Brush = gfx.CreateSolidBrush(0, 0, 255, 128);
+				Brush = gfx.CreateSolidBrush(177, 156, 217, 128);
 				Font = gfx.CreateFont("Arial", 10);
 				Console.WriteLine($"SetupGraphics called");
 			};
