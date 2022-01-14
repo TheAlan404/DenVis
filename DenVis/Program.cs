@@ -16,7 +16,7 @@ using System.Threading;
  
  /// TW: SHITCODE AHEAD
  
-im sorry -dennis
+im sorry -dennis also thearmagan
  
  */
 
@@ -115,7 +115,7 @@ namespace DenVis
 			float[] data = new float[(int)fftSize];
 
 			fftProvider.GetFftData(data);
-			float [] dataPart = new ArraySegment<float>(data, 0, screenW).ToArray();
+			float [] dataPart = new ArraySegment<float>(data, 0, screenW/2).ToArray();
 
 
 			// azıcık olan c# bilgim yetmedi
@@ -139,14 +139,16 @@ namespace DenVis
 			//k /= 50;
 			//Console.WriteLine(k);
 			
-			if (dataPart.Max() < 0.001) Array.Fill(dataPart, 0f);
+			//if (dataPart.Max() < 0.001) Array.Fill(dataPart, 0f);
 
 
 			
 
 			dataPart = Normalize(dataPart);
 
-			StringBuilder sb = new StringBuilder();
+			
+
+
 
 			float bassSum = 0;
 			for (int i = 0; i < 16; i++)
@@ -157,18 +159,19 @@ namespace DenVis
 			bassSum /= 16;
 
 
-			
-
+			float[] yarısı = new ArraySegment<float>(dataPart,0,(int)(screenW/4)).ToArray();
+			float[] centered = yarısı.Reverse().Concat(yarısı).ToArray();
 			
 
 
 			float previousValue = 0f;
 			float xPosition = pointDistance;
 
-			float ij = 0;
-			foreach(float value in dataPart)
-			{
-				ij++;
+            for (int i = 0; i < centered.Length; i++)
+            {
+				float value = centered[i];
+
+				value += bassSum;
 				gfx.DrawLine(Brush,
 					// start x
 					xPosition - pointDistance,
@@ -189,13 +192,14 @@ namespace DenVis
 				//lastHue += 0.001;
 
 				if (lastHue > 1) lastHue = lastHue % 1;
+				lastHue += 0.001;
 				System.Drawing.Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
-				
-				
-				Brush.Color = new Color(c.R, c.G, c.B);
-                
 
-                xPosition += pointDistance;
+
+				Brush.Color = new Color(c.R, c.G, c.B);
+
+
+				xPosition += pointDistance;
 				previousValue = value;
 			}
 
