@@ -3,13 +3,19 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <ApplicationIcon />
+    <ApplicationIcon></ApplicationIcon>
     <StartupObject>DenVis.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DenVis.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CSCore" Version="1.2.1.2" />
+    <PackageReference Include="Fleck" Version="1.2.0" />
     <PackageReference Include="GameOverlay.Net" Version="4.3.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>
