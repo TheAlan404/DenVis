@@ -3,6 +3,7 @@ using GameOverlay.Windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Timers;
 
 namespace DenVis
 {
@@ -17,6 +18,7 @@ namespace DenVis
 		public static float heightMultiplier = 100; // Program: im sensitive uwu
 		public static bool IsOnTopOfTaskbar = true;
 		public static float TaskbarHeight = 38;
+		public static bool IsFullscreen = Utils.IsForegroundWindowFullScreen();
 		public static float yOffset = Program.IsWin8 ? (220 + (IsOnTopOfTaskbar ? TaskbarHeight : 0)) : 42;
 		public static bool CenterVisualizer = false;
 		public static float HueChangeSpeed = 0.001f;
@@ -29,6 +31,9 @@ namespace DenVis
 		public static SolidBrush Brush;
 		public static Font Font;
 		public static double lastHue = 0;
+
+		// Other
+		public static Timer FullscreenTimer;
 
 		public static void Setup()
 		{
@@ -65,10 +70,33 @@ namespace DenVis
 
 			graphicsWindow.DrawGraphics += Render;
 
+			SetFullscreenTimer();
+
 			Console.WriteLine($"GraphicsSetup done");
 
 			graphicsWindow.Create();
 			graphicsWindow.Join();
+		}
+
+		public static void SetFullscreenTimer()
+		{
+			FullscreenTimer = new Timer(2000);
+			FullscreenTimer.Elapsed += (sender, args) =>
+			{
+				bool r = Utils.IsForegroundWindowFullScreen();
+				if (r == IsFullscreen) return;
+				IsFullscreen = r;
+				if (r)
+				{
+					yOffset = Program.IsWin8 ? 220 : 0;
+				}
+				else
+				{
+					yOffset = Program.IsWin8 ? (220 + TaskbarHeight) : 42;
+				}
+			};
+			FullscreenTimer.AutoReset = true;
+			FullscreenTimer.Enabled = true;
 		}
 
 		public static void Render(object _, DrawGraphicsEventArgs e)
