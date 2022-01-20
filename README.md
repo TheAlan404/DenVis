@@ -22,6 +22,14 @@ Tested Windows versions: 8.1 and 10
 
 [Download from the releases page](https://github.com/TheAlan404/DenVis/releases)
 
+**"Permanent" installation**
+1. Download a release from the releases page
+2. Extract to somewhere (I recommend `C:/Program Files/DenVis` etc)
+3. `win+R` (or open explorer etc)
+4. Go to (file path) `shell:startup`
+5. Create a shortcut in that folder to `DenVis.exe`
+6. ~~Profit~~ Now DenVis will start automatically when Windows starts!
+
 ### Building
 
 Required nuget packages:
