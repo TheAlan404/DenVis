@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
-using CSCore.SoundIn;
-using GameOverlay.Windows;
-using GameOverlay.Drawing;
-using CSCore.Streams;
-using CSCore;
-using CSCore.Streams.Effects;
-using System.Linq;
+using System.IO;
 using CSCore.DSP;
-using CSCore.Utils;
-using System.Text;
-using System.Threading;
-using System.Collections.Generic;
 
 /*
  
@@ -25,7 +14,7 @@ namespace DenVis
 {
 	public static class Program
 	{
-		public const string DenVisVersion = "a.0.1";
+		public const string DenVisVersion = "a.0.2";
 
 		public static bool IsWin8 = Environment.OSVersion.Version.Major == 6;
 

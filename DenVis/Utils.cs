@@ -57,73 +57,6 @@ namespace DenVis
 			return (devMode.dmPelsWidth, devMode.dmPelsHeight);
 		}
 
-
-
-
-		/*
-
-		public static Color SetHue(Color oldColor)
-		{
-			var temp = new HSV();
-			temp.h = oldColor.GetHue();
-			temp.s = oldColor.GetSaturation();
-			temp.v = getBrightness(oldColor);
-			return ColorFromHSL(temp);
-		}
-
-		// color brightness as perceived:
-		public static float getBrightness(Color c)
-		{ return (c.R * 0.299f + c.G * 0.587f + c.B * 0.114f) / 256f; }
-
-		// A common triple float struct for both HSL & HSV
-		// Actually this should be immutable and have a nice constructor!!
-		public struct HSV { public float h; public float s; public float v; }
-
-		// the Color Converter
-		static public Color ColorFromHSL(HSV hsl)
-		{
-			if (hsl.s == 0)
-			{ int L = (int)hsl.v; return Color.FromArgb(255, L, L, L); }
-
-			double min, max, h;
-			h = hsl.h / 360d;
-
-			max = hsl.v < 0.5d ? hsl.v * (1 + hsl.s) : (hsl.v + hsl.s) - (hsl.v * hsl.s);
-			min = (hsl.v * 2d) - max;
-			
-			Color c = Color.FromArgb(255, (int)(255 * RGBChannelFromHue(min, max, h + 1 / 3d)),
-										  (int)(255 * RGBChannelFromHue(min, max, h)),
-										  (int)(255 * RGBChannelFromHue(min, max, h - 1 / 3d)));
-			return c;
-		}
-
-		static double RGBChannelFromHue(double m1, double m2, double h)
-		{
-			h = (h + 1d) % 1d;
-			if (h < 0) h += 1;
-			if (h * 6 < 1) return m1 + (m2 - m1) * 6 * h;
-			else if (h * 2 < 1) return m2;
-			else if (h * 3 < 2) return m1 + (m2 - m1) * 6 * (2d / 3d - h);
-			else return m1;
-
-		}
-
-		// big brain but i dont want to lmao
-		public static float OldHue;
-		public static (float, float, float) AddHueToColor(float r, float b, float g)
-		{
-			Color c = Color.FromArgb(255, (int)r, (int)g, (int)b);
-
-			Color ret = ColorFromHSL(new HSV()
-			{
-				h = ((c.GetHue()) + 1) % 100, // hue 100% değilmi
-				s = c.GetSaturation(),
-				v = c.GetBrightness(),
-			});
-
-			return ((float)ret.R, (float)ret.G, (float)ret.B);
-		}*/
-
 		[DllImport("user32.dll")]
 		static extern IntPtr GetForegroundWindow();
 
@@ -146,12 +79,8 @@ namespace DenVis
 			public int Bottom;
 		}
 
-		/*[DllImport("user32.dll", SetLastError = true)]
-		static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
 		[DllImport("user32.dll")]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool IsWindowVisible(IntPtr hWnd);*/
+		static extern IntPtr GetDesktopWindow();
 
 		public static bool IsForegroundWindowFullScreen()
 		{
@@ -160,14 +89,12 @@ namespace DenVis
 
 			IntPtr handle = GetForegroundWindow();
 			if (handle == IntPtr.Zero) return false;
+			if (GetDesktopWindow() == handle) return false;
 
 			W32RECT wRect;
 			if (!GetWindowRect(handle, out wRect)) return false;
 
 			return scrX == (wRect.Right - wRect.Left) && scrY == (wRect.Bottom - wRect.Top);
-
-			//IntPtr hWnd = FindWindow("Shell_TrayWnd", null);
-			//return IsWindowVisible(hWnd);
 		}
 	}
 

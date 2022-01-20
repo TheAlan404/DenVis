@@ -1,5 +1,6 @@
 ﻿using GameOverlay.Drawing;
 using GameOverlay.Windows;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,18 +15,13 @@ namespace DenVis
 		public static int screenH = Utils.GetDisplay().Item2;
 		public static float pointDistance = ((int)Program.fftSize) / screenW;
 
-		// Configurable
-		public static float heightMultiplier = 100; // Program: im sensitive uwu
-		public static bool IsOnTopOfTaskbar = true;
-		public static float TaskbarHeight = 38;
-		public static bool IsFullscreen = Utils.IsForegroundWindowFullScreen();
-		public static float yOffset = Program.IsWin8 ? (220 + (IsOnTopOfTaskbar ? TaskbarHeight : 0)) : 42;
-		public static bool CenterVisualizer = false;
-		public static float HueChangeSpeed = 0.001f;
+		public static float TaskbarHeight = Program.IsWin8 ? 38 : 42;
+		public static float ScreenOffset = Program.IsWin8 ? 220 : 0;
+		public static float ScreenBottom = screenH - ScreenOffset;
 		public static float BassRange = 8;
+		public static bool IsFullscreen = Utils.IsForegroundWindowFullScreen();
 
-		public static bool UseDataHistory = true;
-		public static List<float> dataHistory = new List<float>(50);
+		public static List<float> dataHistory = new List<float>(30);
 
 		// Graphics
 		public static SolidBrush Brush;
@@ -59,7 +55,17 @@ namespace DenVis
 				if (e.RecreateResources) Brush.Dispose();
 				Brush = gfx.CreateSolidBrush(177, 156, 217, 128);
 				Font = gfx.CreateFont("Arial", 10);
-				Console.WriteLine($"SetupGraphics called");
+
+				SnowRenderer.Setup(gfx);
+				TextRenderer.Setup(gfx);
+
+				TextRenderer.Add(new Text()
+				{
+					String = "DenVis is running",
+					Expire = 3000,
+					X = 20,
+					Y = 20
+				});
 			};
 
 			graphicsWindow.DestroyGraphics += (object _, DestroyGraphicsEventArgs e) =>
@@ -83,17 +89,7 @@ namespace DenVis
 			FullscreenTimer = new Timer(2000);
 			FullscreenTimer.Elapsed += (sender, args) =>
 			{
-				bool r = Utils.IsForegroundWindowFullScreen();
-				if (r == IsFullscreen) return;
-				IsFullscreen = r;
-				if (r)
-				{
-					yOffset = Program.IsWin8 ? 220 : 0;
-				}
-				else
-				{
-					yOffset = Program.IsWin8 ? (220 + TaskbarHeight) : 42;
-				}
+				IsFullscreen = Utils.IsForegroundWindowFullScreen();
 			};
 			FullscreenTimer.AutoReset = true;
 			FullscreenTimer.Enabled = true;
@@ -101,8 +97,19 @@ namespace DenVis
 
 		public static void Render(object _, DrawGraphicsEventArgs e)
 		{
-			var gfx = e.Graphics;
+			Graphics gfx = e.Graphics;
 
+			if (Settings.Enabled) RenderVisualizer(gfx);
+			if (Settings.Snow.Enabled)
+			{
+				SnowRenderer.Render(gfx);
+				SnowRenderer.MoveSnow(gfx);
+			}
+			TextRenderer.Render(gfx);
+		}
+
+		public static void RenderVisualizer(Graphics gfx)
+		{
 			gfx.ClearScene();
 
 			float[] data = new float[(int)Program.fftSize];
@@ -112,7 +119,7 @@ namespace DenVis
 
 			float max = dataPart.Max();
 
-			if (max < 0.0001) Array.Fill(dataPart, 0f);
+			if (max < Settings.Sensitivity) Array.Fill(dataPart, 0f);
 
 			if (dataHistory.Capacity == dataHistory.Count) dataHistory.RemoveAt(0);
 			dataHistory.Add(max);
@@ -124,16 +131,16 @@ namespace DenVis
 
 
 
-
-			/*float bassSum = 0;
+			// doesnt work.. TODO?
+			float bassSum = 0;
 			for (int i = 0; i < BassRange; i++)
 			{
 				bassSum += dataPart[i];
 			}
 			bassSum /= BassRange;
-			*/
+			
 
-			if (CenterVisualizer)
+			if (Settings.CenterVisualizer)
 			{
 				//float[] yarısı = new ArraySegment<float>(dataPart, 0, (int)(screenW / 4)).ToArray();
 				//float[] centered = yarısı.Reverse().Concat(yarısı).ToArray();
@@ -166,16 +173,9 @@ namespace DenVis
 					5
 				);
 
-				//gfx.DrawText(Font, Brush, 10, ij * 10, value.ToString());
-
-
-				//lastHue += 0.001;
-
 				if (lastHue > 1) lastHue = lastHue % 1;
-				lastHue += HueChangeSpeed;
+				lastHue += Settings.HueChangeSpeed;
 				System.Drawing.Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
-
-
 				Brush.Color = new Color(c.R, c.G, c.B);
 
 
@@ -187,15 +187,14 @@ namespace DenVis
 			//if (bassSum > 0.02) lastHue += bassSum;
 
 
-
 			float ValueToY(float v)
 			{
-				return (screenH - yOffset) - (v * heightMultiplier);
+				return (screenH) - (v * Settings.HeightMultiplier) - (ScreenOffset + Settings.yOffset + (IsFullscreen ? 0 : TaskbarHeight));
 			}
 
 			float[] Normalize(float[] values, float by = 1)
 			{
-				float ratio = (UseDataHistory ? dataHistory.Max() : values.Max()) / by;
+				float ratio = (Settings.UseDataHistory ? dataHistory.Max() : values.Max()) / by;
 				return values.Select(i => i / ratio).ToArray();
 			}
 		}
