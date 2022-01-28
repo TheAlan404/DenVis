@@ -7,15 +7,24 @@ namespace DenVis
 	public static class SnowRenderer
 	{
 		public static Random Random = new Random();
-
-		public static List<SolidBrush> Brushes = new List<SolidBrush>();
+		public static List<SolidBrush> Brushes;
 		public static Font[] Fonts;
 
+		public static List<Snowflake> Snowflakes;
 
-		public static List<Snowflake> Snowflakes = new List<Snowflake>();
+		public static Color[] Colors = new Color[]
+		{
+			new Color(170, 170, 204, Settings.SnowOpacity),
+			new Color(221, 221, 255, Settings.SnowOpacity),
+			new Color(204, 204, 221, Settings.SnowOpacity),
+			new Color(243, 243, 243, Settings.SnowOpacity),
+			new Color(240, 255, 255, Settings.SnowOpacity),
+		};
 
 		public static void Setup(Graphics gfx)
 		{
+			Brushes = new List<SolidBrush>();
+			Snowflakes = new List<Snowflake>();
 			Fonts = new Font[]
 			{
 					gfx.CreateFont("Times", 16),
@@ -23,12 +32,12 @@ namespace DenVis
 					gfx.CreateFont("Verdana", 16)
 			};
 
-			foreach (Color color in Settings.Snow.Colors)
+			foreach (Color color in Colors)
 			{
 				Brushes.Add(gfx.CreateSolidBrush(color));
 			}
 
-			for (int i = 0; i < Settings.Snow.Amount; i++)
+			for (int i = 0; i < Settings.SnowAmount; i++)
 			{
 				Snowflakes.Add(new Snowflake(gfx));
 			}
@@ -43,7 +52,7 @@ namespace DenVis
 		{
 			foreach (Snowflake flake in Snowflakes)
 			{
-				gfx.DrawText(Fonts[flake.FontIndex], flake.Size, Brushes[flake.BrushIndex], flake.X, flake.Y, Settings.SnowflakeText);
+				gfx.DrawText(Fonts[flake.FontIndex], flake.Size, Brushes[flake.BrushIndex], flake.X, flake.Y, "*");
 			}
 		}
 
@@ -105,11 +114,18 @@ namespace DenVis
 
 			public void Regenerate(Graphics gfx)
 			{
-				Size = Random.Next(Settings.Snow.MaxFontSize - Settings.Snow.MinFontSize) + Settings.Snow.MinFontSize;
+				try
+				{
+					Size = Random.Next(Settings.SnowMaxFontSize - Settings.SnowMinFontSize) + Settings.SnowMinFontSize;
+				}
+				catch (Exception)
+				{
+					Size = Settings.SnowMaxFontSize;
+				}
 
 				FontIndex = Random.Next(Fonts.Length);
 				BrushIndex = Random.Next(Brushes.Count);
-				SinkSpeed = Settings.Snow.BaseSinkSpeed * Size / 5;
+				SinkSpeed = Settings.SnowBaseSinkSpeed * Size / 5;
 				InitialX = Random.Next(Renderer.screenW);
 				X = InitialX;
 				Y = -Size;

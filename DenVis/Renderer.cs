@@ -1,9 +1,9 @@
 ﻿using GameOverlay.Drawing;
 using GameOverlay.Windows;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace DenVis
@@ -15,7 +15,7 @@ namespace DenVis
 		public static int screenH = Utils.GetDisplay().Item2;
 		public static float pointDistance = ((int)Program.fftSize) / screenW;
 
-		public static float TaskbarHeight = Program.IsWin8 ? 38 : 42;
+		public static float TaskbarHeight = Program.IsWin8 ? 36 : 42;
 		public static float ScreenOffset = Program.IsWin8 ? 220 : 0;
 		public static float ScreenBottom = screenH - ScreenOffset;
 		public static float BassRange = 8;
@@ -30,6 +30,8 @@ namespace DenVis
 
 		// Other
 		public static Timer FullscreenTimer;
+
+		public static TaskCompletionSource TCSReady = new TaskCompletionSource();
 
 		public static void Setup()
 		{
@@ -53,7 +55,7 @@ namespace DenVis
 			{
 				var gfx = e.Graphics;
 				if (e.RecreateResources) Brush.Dispose();
-				Brush = gfx.CreateSolidBrush(177, 156, 217, 128);
+				Brush = gfx.CreateSolidBrush(177, 156, 217, 255);
 				Font = gfx.CreateFont("Arial", 10);
 
 				SnowRenderer.Setup(gfx);
@@ -66,6 +68,11 @@ namespace DenVis
 					X = 20,
 					Y = 20
 				});
+
+				if(!TCSReady.Task.IsCompleted) TCSReady.SetResult();
+				Program.LoadConfiguration();
+				SetColor(-1, -1, -1, Settings.Opacity);
+				Console.WriteLine("All ready");
 			};
 
 			graphicsWindow.DestroyGraphics += (object _, DestroyGraphicsEventArgs e) =>
@@ -81,7 +88,7 @@ namespace DenVis
 			Console.WriteLine($"GraphicsSetup done");
 
 			graphicsWindow.Create();
-			graphicsWindow.Join();
+			_ = Task.Run(() => graphicsWindow.Join());
 		}
 
 		public static void SetFullscreenTimer()
@@ -99,8 +106,10 @@ namespace DenVis
 		{
 			Graphics gfx = e.Graphics;
 
+			gfx.ClearScene();
+
 			if (Settings.Enabled) RenderVisualizer(gfx);
-			if (Settings.Snow.Enabled)
+			if (Settings.SnowEnabled)
 			{
 				SnowRenderer.Render(gfx);
 				SnowRenderer.MoveSnow(gfx);
@@ -108,10 +117,18 @@ namespace DenVis
 			TextRenderer.Render(gfx);
 		}
 
+		public static void SetColor(float r, float g, float b, float a)
+		{
+			Brush.Color = new Color(
+				r == -1 ? Brush.Color.R : r,
+				g == -1 ? Brush.Color.G : g,
+				b == -1 ? Brush.Color.B : b,
+				a == -1 ? Brush.Color.A : a
+			);
+		}
+
 		public static void RenderVisualizer(Graphics gfx)
 		{
-			gfx.ClearScene();
-
 			float[] data = new float[(int)Program.fftSize];
 
 			Program.fftProvider.GetFftData(data);
@@ -138,17 +155,6 @@ namespace DenVis
 				bassSum += dataPart[i];
 			}
 			bassSum /= BassRange;
-			
-
-			if (Settings.CenterVisualizer)
-			{
-				//float[] yarısı = new ArraySegment<float>(dataPart, 0, (int)(screenW / 4)).ToArray();
-				//float[] centered = yarısı.Reverse().Concat(yarısı).ToArray();
-				//dataPart = centered;
-
-
-			}
-
 
 
 			float previousValue = 0f;
@@ -173,11 +179,14 @@ namespace DenVis
 					5
 				);
 
-				if (lastHue > 1) lastHue = lastHue % 1;
-				lastHue += Settings.HueChangeSpeed;
-				System.Drawing.Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
-				Brush.Color = new Color(c.R, c.G, c.B);
 
+				if (Settings.RainbowMode)
+				{
+					if (lastHue > 1) lastHue = lastHue % 1;
+					lastHue += Settings.HueChangeSpeed;
+					System.Drawing.Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
+					SetColor(c.R, c.G, c.B, -1);
+				}
 
 				xPosition += pointDistance;
 				previousValue = value;

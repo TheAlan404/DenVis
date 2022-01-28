@@ -1,22 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <ApplicationIcon></ApplicationIcon>
-    <StartupObject>DenVis.Program</StartupObject>
-    <UseWindowsForms>true</UseWindowsForms>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0-windows</TargetFramework>
+		<ApplicationIcon></ApplicationIcon>
+		<StartupObject>DenVis.Program</StartupObject>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition="'$(Configuration)'=='DEBUG'">
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition="'$(Configuration)'=='RELEASE'">
+		<OutputType>WinExe</OutputType>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="DenVis.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="DenVis.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CSCore" Version="1.2.1.2" />
-    <PackageReference Include="Fleck" Version="1.2.0" />
-    <PackageReference Include="GameOverlay.Net" Version="4.3.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="CSCore" Version="1.2.1.2" />
+		<PackageReference Include="Fleck" Version="1.2.0" />
+		<PackageReference Include="GameOverlay.Net" Version="4.3.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	</ItemGroup>
 
 </Project>

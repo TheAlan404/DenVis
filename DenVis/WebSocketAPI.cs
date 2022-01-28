@@ -17,7 +17,7 @@ namespace DenVis
 			Server = new WebSocketServer($"ws://0.0.0.0:{Port}");
 			Server.RestartAfterListenError = true;
 
-			Server.Start(socket =>
+			Server.Start((socket) =>
 			{
 				socket.OnOpen += () =>
 				{
@@ -39,6 +39,7 @@ namespace DenVis
 							JObject root = new JObject();
 							root["error"] = true; // maybe
 							root["name"] = "error";
+							root["errortype"] = "backend";
 							root["data"] = JsonConvert.SerializeObject(any);
 
 							socket.Send(JsonConvert.SerializeObject(data));
@@ -65,46 +66,47 @@ namespace DenVis
 			// TODO: switch to attributes etc idk
 			switch (commandName)
 			{
-				case "SetYOffset":
-					Settings.yOffset = data.ToObject<float>();
+				case "SetSettings":
+					JObject sets = (JObject)data;
+					Settings.FromJSON(sets);
+					Program.SaveConfiguration();
 					break;
-				case "SetHeightMultiplier":
-					Settings.HeightMultiplier = data.ToObject<float>();
-					break;
-				case "EnableSnow":
-					Settings.Snow.Enabled = true;
-					break;
-				case "DisableSnow":
-					Settings.Snow.Enabled = false;
-					break;
-				case "SetSnowAmount":
-					Settings.Snow.Amount  = data.ToObject<int>();
-					break;
-				case "SetSnowBaseSinkSpeed":
-					Settings.Snow.BaseSinkSpeed = data.ToObject<float>();
-					break;
-				case "SetSnowOpacity":
-					Settings.Snow.Opacity = data.ToObject<int>();
+				case "ResetSettings":
+					Settings.ResetToDefaults();
+					Program.SaveConfiguration();
 					break;
 				case "AddText":
 					TextRenderer.Add(data.ToObject<Text>());
 					break;
 				case "AddMultipleTexts":
 					JArray texts = (JArray)data;
-					foreach(JValue value in texts)
+					foreach (JValue value in texts)
 					{
 						TextRenderer.Add(value.ToObject<Text>());
 					}
+					break;
+				case "SetColor":
+					JArray clr = (JArray)data;
+					Settings.ColorR = (float)clr[0];
+					Settings.ColorG = (float)clr[1];
+					Settings.ColorB = (float)clr[2];
 					break;
 				default:
 					return;
 			}
 		}
 
+		public static void Broadcast(string eventName, JToken data = null)
+		{
+			JObject obj = new JObject();
+			obj["name"] = eventName;
+			obj["data"] = data;
+			Broadcast(obj);
+		}
 		public static void Broadcast(JToken token) => Broadcast(JsonConvert.SerializeObject(token));
 		public static void Broadcast(string msg)
 		{
-			foreach(IWebSocketConnection client in Clients)
+			foreach(var client in Clients)
 			{
 				client.Send(msg);
 			}
@@ -119,11 +121,12 @@ namespace DenVis
 			data["screenW"] = Renderer.screenW;
 			data["screenH"] = Renderer.screenH;
 			data["win8"] = Program.IsWin8;
+			data["settings"] = Settings.ToJSONWithTypes();
 
 			root["data"] = data;
 			root["name"] = "welcome";
 
-			return JsonConvert.SerializeObject(data);
+			return JsonConvert.SerializeObject(root);
 		}
 	}
 }
