@@ -48,7 +48,9 @@ namespace DenVis
 			{
 				FPS = 30,
 				IsTopmost = true,
-				IsVisible = true
+				IsVisible = true,
+				Title = "DenVis",
+				MenuName = "DenVis",
 			};
 
 			graphicsWindow.SetupGraphics += (object _, SetupGraphicsEventArgs e) =>
@@ -198,7 +200,9 @@ namespace DenVis
 
 			float ValueToY(float v)
 			{
-				return (screenH) - (v * Settings.HeightMultiplier) - (ScreenOffset + Settings.yOffset + (IsFullscreen ? 0 : TaskbarHeight));
+				return screenH - 
+					(v * Settings.HeightMultiplier) - 
+					(ScreenOffset + Settings.yOffset + (IsFullscreen ? 0 : Settings.IsOnTopOfTaskbar ? TaskbarHeight : 0));
 			}
 
 			float[] Normalize(float[] values, float by = 1)

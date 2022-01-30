@@ -1,7 +1,6 @@
-﻿using GameOverlay.Drawing;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -14,8 +13,8 @@ namespace DenVis
 
 		// Category: Position
 
-		[Setting("Height Multiplier", 100, "Specifies the height of the bar")]
-		public static float HeightMultiplier = 100; // Program: im sensitive uwu
+		[Setting("Height Multiplier", 100, 1, 1000, "Specifies the height of the bar")]
+		public static int HeightMultiplier = 100; // Program: im sensitive uwu
 		[Setting("Show on top of Taskbar", true, "Shows the bar on top of the Taskbar when it is visible")]
 		public static bool IsOnTopOfTaskbar = true;
 
@@ -24,14 +23,14 @@ namespace DenVis
 
 		// Category: Visuals
 
-		[Setting("Enable Rainbow Mode", true, "Makes the visualizer gay/rainbow")]
+		[Setting("Enable Rainbow Mode", true, "Makes the visualizer gay")]
 		public static bool RainbowMode = true;
 
-		[Setting("Hue Change Speed", 0.001f)]
+		[Setting("Hue Change Speed", 0.001f, "Fine-tuning might be needed")]
 		public static float HueChangeSpeed = 0.001f;
 
 		private static float _opacity = 0.5f;
-		[Setting("Opacity", 0.5f)]
+		[Setting("Opacity", 0.5f, 0, 1, "Set how visible it should be")]
 		public static float Opacity
 		{
 			get => Renderer.TCSReady.Task.IsCompleted ? Renderer.Brush.Color.A : _opacity;
@@ -59,21 +58,27 @@ namespace DenVis
 			set => Renderer.SetColor(-1, -1, value, -1);
 		}
 
+		[Setting("Check for updates", true, "Checks for updates when DenVis starts", "Maintenance")]
+		public static bool CheckForUpdates = true;
+
 		// Category: Advanced
 
 		[Setting("Use Data History", true, "Use an array of previous floats to calculate maximum value", "Advanced")]
 		public static bool UseDataHistory = true;
-		[Setting("Data History Length", 30, 1, 1800, "30 = 1 second because DenVis is 30 FPS", "Advanced")]
+		[Setting("Data History Length", 30, 1, 900, "30 = 1 second because DenVis is 30 FPS", "Advanced")]
 		public static int DataHistoryLength
 		{
 			get => Renderer.dataHistory.Capacity;
-			set => Renderer.dataHistory.Capacity = value;
+			set
+			{
+				Renderer.dataHistory = new List<float>(value);
+			}
 		}
 
 		[Setting("(unused) Range of Bass", 100, 0, 4096, "FFT", "Sound")]
-		public static float BassRange = 100;
+		public static int BassRange = 100;
 
-		[Setting("Sensitivity", 0.0001f, 0, 2, "Threshold to render sound", "Sound")]
+		[Setting("Sensitivity", 0.0001f, 0, 1, "Threshold to render sound", "Sound", Step = 0.00001f)]
 		public static float Sensitivity = 0.0001f;
 
 		// Category: Snow
@@ -99,7 +104,7 @@ namespace DenVis
 			}
 		}
 
-		[Setting("Base Sink Speed", 0.6f, 0, 2, "", "Snow")]
+		[Setting("Base Sink Speed", 0.6f, 0, 2, "", "Snow", Step = 0.1f)]
 		public static float SnowBaseSinkSpeed = 0.6f;
 
 		[WebSocketIgnoreSetting]
@@ -290,6 +295,8 @@ namespace DenVis
 
 			ResetFields(typeof(Settings));
 			ResetProperties(typeof(Settings));
+
+			WebSocketAPI.Broadcast("SettingsChange", ToJSONWithTypes());
 		}
 	}
 
@@ -302,6 +309,7 @@ namespace DenVis
 		public string Category;
 		public float Min;
 		public float Max;
+		public float Step;
 
 		public SettingAttribute(string name, object _default, string description = "", string category = "Visualizer")
 		{

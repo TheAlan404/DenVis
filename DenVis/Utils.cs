@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace DenVis
 {
@@ -95,6 +96,20 @@ namespace DenVis
 			if (!GetWindowRect(handle, out wRect)) return false;
 
 			return scrX == (wRect.Right - wRect.Left) && scrY == (wRect.Bottom - wRect.Top);
+		}
+
+		[DllImport("kernel32.dll")]
+		public static extern bool AllocConsole();
+
+		public static void EnsureSingleton()
+		{
+			Process[] procs = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
+			foreach(Process proc in procs)
+			{
+				if (proc.Id == Process.GetCurrentProcess().Id) continue;
+				proc.Kill(true);
+			}
+			Console.WriteLine($"Killed {procs.Length - 1} other DenVis processes");
 		}
 	}
 

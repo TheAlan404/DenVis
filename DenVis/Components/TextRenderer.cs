@@ -10,6 +10,7 @@ namespace DenVis
 	{
 		[JsonProperty("Text")]
 		public string String = "DenVis";
+		public string Id = Guid.NewGuid().ToString();
 		public float X = 0;
 		public float Y = 0;
 		public int Size = 16;

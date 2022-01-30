@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Fleck;
 using Newtonsoft.Json;
@@ -83,6 +84,21 @@ namespace DenVis
 					foreach (JValue value in texts)
 					{
 						TextRenderer.Add(value.ToObject<Text>());
+					}
+					break;
+				case "RemoveText":
+					string id = (string)data;
+					var text = TextRenderer.Texts.Where(t => t.Id == id).First();
+					if (text == null) return;
+					TextRenderer.Texts.Remove(text);
+					break;
+				case "RemoveMultipleTexts":
+					JArray idlist = (JArray)data;
+					foreach (JValue value in idlist)
+					{
+						var atext = TextRenderer.Texts.Where(t => t.Id == (string)value).First();
+						if (atext == null) continue;
+						TextRenderer.Texts.Remove(atext);
 					}
 					break;
 				case "SetColor":
