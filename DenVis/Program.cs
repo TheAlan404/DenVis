@@ -20,7 +20,7 @@ namespace DenVis
 {
 	public static class Program
 	{
-		public const string DenVisVersion = "a.0.3";
+		public const string DenVisVersion = "a.0.4";
 
 		public static bool IsWin8 = Environment.OSVersion.Version.Major == 6;
 
@@ -41,8 +41,6 @@ namespace DenVis
 			Console.WriteLine($"Screen is ({Renderer.screenW}w, {Renderer.screenH}h)");
 
 			SetupTrayIcon();
-
-			if (Settings.CheckForUpdates) _ = CheckUpdates();
 
 			SoundCapture.Setup();
 			WebSocketAPI.Setup();

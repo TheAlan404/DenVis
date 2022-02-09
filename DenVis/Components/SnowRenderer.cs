@@ -46,14 +46,30 @@ namespace DenVis
 		public static void UpdateCount()
 		{
 			Graphics gfx = Renderer.graphicsWindow.Graphics;
+
+			if (Settings.SnowAmount == Snowflakes.Count) return;
+			if(Settings.SnowAmount > Snowflakes.Count)
+			{
+				for (int i = 0; i < Settings.SnowAmount - Snowflakes.Count; i++)
+				{
+					Snowflakes.Add(new Snowflake(gfx));
+				}
+			}
+			else
+			{
+				Snowflakes.RemoveRange(0, Snowflakes.Count - Settings.SnowAmount);
+			}
 		}
 
 		public static void Render(Graphics gfx)
 		{
-			foreach (Snowflake flake in Snowflakes)
+			try
 			{
-				gfx.DrawText(Fonts[flake.FontIndex], flake.Size, Brushes[flake.BrushIndex], flake.X, flake.Y, "*");
-			}
+				foreach (Snowflake flake in Snowflakes)
+				{
+					gfx.DrawText(Fonts[flake.FontIndex], flake.Size, Brushes[flake.BrushIndex], flake.X, flake.Y, "*");
+				}
+			} catch(InvalidOperationException) { }
 		}
 
 		public static void MoveSnow(Graphics gfx, float extra = 0)

@@ -8,7 +8,7 @@ namespace DenVis
 {
 	public class Settings
 	{
-		[Setting("Enable Visualizer", true, "Enables the sound bar")]
+		[Setting("Enable Visualizer", true, "Enables the sound bar", Shortcut = 'v')]
 		public static bool Enabled = true;
 
 		// Category: Position
@@ -29,8 +29,8 @@ namespace DenVis
 		[Setting("Hue Change Speed", 0.001f, "Fine-tuning might be needed")]
 		public static float HueChangeSpeed = 0.001f;
 
-		private static float _opacity = 0.5f;
-		[Setting("Opacity", 0.5f, 0, 1, "Set how visible it should be")]
+		private static float _opacity = 0.7f;
+		[Setting("Opacity", 0.7f, 0, 1, "Set how visible it should be")]
 		public static float Opacity
 		{
 			get => Renderer.TCSReady.Task.IsCompleted ? Renderer.Brush.Color.A : _opacity;
@@ -75,15 +75,56 @@ namespace DenVis
 			}
 		}
 
-		[Setting("(unused) Range of Bass", 100, 0, 4096, "FFT", "Sound")]
-		public static int BassRange = 100;
+		// Category: Bass
 
-		[Setting("Sensitivity", 0.0001f, 0, 1, "Threshold to render sound", "Sound", Step = 0.00001f)]
+		[Setting("Bass Waves", false, "[BETA] Enable sound waves", "Bass", Shortcut = 'b')]
+		public static bool EnableBassWaves = false;
+
+		[Setting("Range of Bass", 20, 0, 500, "[BETA] If 'Use Bass Range' is on, this will be used for the range to calculate bass", "Bass")]
+		public static int BassRange = 20;
+
+		[Setting("Bass sensitivity", 0.6, 0, 1, "[BETA] Percentage of loudness that determines if the current audio is bass depending on the history of bass values", "Bass", Step = 0.01f)]
+		public static float BassSensitivity = 0.6f;
+
+		[Setting("Color Bass Range Differiently", false, "[BETA] Colors selected bass range to black. Useful when setting 'Range of Bass'", "Bass")]
+		public static bool ColorBassDifferiently = false;
+
+		[Setting("Wave Opacity", 0.5f, 0, 1, "[BETA] Starting opacity for a wave", "Bass-Animation")]
+		public static float WaveOpacity = 0.5f;
+
+		[Setting("_WavePosYSubtract", 5, 0, 30, "[BETA] ", "Bass-Animation", Step = 1)]
+		public static float _WavePosYSubtract = 5;
+
+		[Setting("Wave Opacity Subtract", 0.03f, 0, 1, "[BETA] Amount to subtract every frame from wave opacity", "Bass-Animation", Step = 0.01f)]
+		public static float _WaveOpacitySubtract = 0.03f;
+
+		[Setting("Bass Check Start", true, "[BETA] Dont allow trails by checking if the previus frame was bass", "Bass-Animation")]
+		public static bool _BassCheckStart = true;
+
+		[Setting("Use Bass Range", true, "[BETA] true = use bass range, false = calculate based on full spectrum", "Bass")]
+		public static bool _BassUseBassRange = true;
+
+		[Setting("_bassIntensityHistory", 100, 1, 900, "[BETA] 30 = 1 second because DenVis is 30 FPS", "Bass")]
+		public static int _bassIntensityHistory
+		{
+			get => Renderer.bassIntensityHistory.Capacity;
+			set
+			{
+				Renderer.bassIntensityHistory = new List<float>(value);
+			}
+		}
+
+		// Category: Sound
+
+		//[Setting("Sensitivity", 0.0001f, 0, 1, "Threshold to render sound", "Sound", Step = 0.00001f)]
+		[WebSocketIgnoreSetting]
 		public static float Sensitivity = 0.0001f;
+
+		
 
 		// Category: Snow
 
-		[Setting("Enable Snow", false, "Make it rain snow", "Snow")]
+		[Setting("Enable Snow", false, "Make it rain snow", "Snow", Shortcut = 's')]
 		public static bool SnowEnabled = false;
 
 		[Setting("Max Font Size", 30, 1, 100, "", "Snow")]
@@ -125,6 +166,8 @@ namespace DenVis
 				}).ToArray();
 			}
 		}
+
+		
 
 
 
@@ -310,6 +353,7 @@ namespace DenVis
 		public float Min;
 		public float Max;
 		public float Step;
+		public char Shortcut;
 
 		public SettingAttribute(string name, object _default, string description = "", string category = "Visualizer")
 		{

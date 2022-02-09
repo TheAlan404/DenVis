@@ -23,6 +23,9 @@ namespace DenVis
 
 		public static List<float> dataHistory = new List<float>(30);
 
+		public static List<float> bassIntensityHistory = new List<float>(100);
+		public static bool IsBassFrame = false;
+
 		// Graphics
 		public static SolidBrush Brush;
 		public static Font Font;
@@ -62,6 +65,7 @@ namespace DenVis
 
 				SnowRenderer.Setup(gfx);
 				TextRenderer.Setup(gfx);
+				WaveRenderer.Setup(gfx);
 
 				TextRenderer.Add(new Text()
 				{
@@ -73,6 +77,7 @@ namespace DenVis
 
 				if(!TCSReady.Task.IsCompleted) TCSReady.SetResult();
 				Program.LoadConfiguration();
+				if (Settings.CheckForUpdates) _ = Program.CheckUpdates();
 				SetColor(-1, -1, -1, Settings.Opacity);
 				Console.WriteLine("All ready");
 			};
@@ -117,6 +122,7 @@ namespace DenVis
 				SnowRenderer.MoveSnow(gfx);
 			}
 			TextRenderer.Render(gfx);
+			WaveRenderer.Render(gfx);
 		}
 
 		public static void SetColor(float r, float g, float b, float a)
@@ -148,16 +154,36 @@ namespace DenVis
 			dataPart = Normalize(dataPart);
 
 
+			// bass
 
-
-			// doesnt work.. TODO?
-			float bassSum = 0;
-			for (int i = 0; i < BassRange; i++)
+			if (Settings.EnableBassWaves)
 			{
-				bassSum += dataPart[i];
-			}
-			bassSum /= BassRange;
+				float bassIntensity = 0;
+				//gfx.DrawText(Font, 30, Brush, 20, 20, dataPart.Length.ToString());
+				for (var i = 8; i < (Settings._BassUseBassRange ? Settings.BassRange : dataPart.Length - 8); i++) bassIntensity += dataPart[i];
 
+				if (bassIntensityHistory.Capacity == bassIntensityHistory.Count) bassIntensityHistory.RemoveAt(0);
+				bassIntensityHistory.Add(bassIntensity);
+
+				//float bassLineY = ValueToY(bassIntensity / 2);
+				//gfx.DrawLine(Brush, 0, bassLineY, screenW, bassLineY, 5);
+
+				if ((bassIntensityHistory.Max() * Settings.BassSensitivity) < bassIntensity)
+				{
+					if (!Settings._BassCheckStart || !IsBassFrame)
+					{
+						WaveRenderer.AddWave();
+					}
+					IsBassFrame = true;
+					//gfx.DrawText(Font, 30, Brush, 20, 20, "BASS!!!");
+				}
+				else
+				{
+					IsBassFrame = false;
+				};
+			}
+
+			// end bass
 
 			float previousValue = 0f;
 			float xPosition = 0;
@@ -189,6 +215,8 @@ namespace DenVis
 					System.Drawing.Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
 					SetColor(c.R, c.G, c.B, -1);
 				}
+
+				if (Settings.ColorBassDifferiently && xPosition < Settings.BassRange) SetColor(0, 0, 0, 1);
 
 				xPosition += pointDistance;
 				previousValue = value;

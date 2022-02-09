@@ -7,6 +7,17 @@ namespace DenVis
 {
 	public static class Utils
 	{
+		public static void SetColor(this GameOverlay.Drawing.SolidBrush brush, float r = -1, float g = -1, float b = -1, float a = -1)
+		{
+			brush.Color = new GameOverlay.Drawing.Color(
+				r == -1 ? brush.Color.R : r,
+				g == -1 ? brush.Color.G : g,
+				b == -1 ? brush.Color.B : b,
+				a == -1 ? brush.Color.A : a
+			);
+		}
+
+
 		[DllImport("user32.dll")]
 		static extern bool EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
 

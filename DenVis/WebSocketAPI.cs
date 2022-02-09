@@ -33,7 +33,7 @@ namespace DenVis
 						JObject data = JsonConvert.DeserializeObject<JObject>(text);
 						try
 						{
-							HandleCommand(data);
+							HandleCommand(socket, data);
 						}
 						catch (Exception any)
 						{
@@ -59,7 +59,7 @@ namespace DenVis
 			});
 		}
 
-		public static void HandleCommand(JObject command)
+		public static void HandleCommand(IWebSocketConnection socket, JObject command)
 		{
 			string commandName = command["name"].ToString();
 			JToken data = command["data"];
@@ -75,6 +75,12 @@ namespace DenVis
 				case "ResetSettings":
 					Settings.ResetToDefaults();
 					Program.SaveConfiguration();
+					WaveRenderer.AddWave(new WaveRenderer.Wave()
+					{
+						Stroke = 10,
+						Opacity = 1
+					});
+					socket.Send(GetBanner()); // Refresh the settings (known bug)
 					break;
 				case "AddText":
 					TextRenderer.Add(data.ToObject<Text>());
@@ -101,11 +107,18 @@ namespace DenVis
 						TextRenderer.Texts.Remove(atext);
 					}
 					break;
+				case "TriggerWave":
+					WaveRenderer.AddWave();
+					break;
 				case "SetColor":
 					JArray clr = (JArray)data;
 					Settings.ColorR = (float)clr[0];
 					Settings.ColorG = (float)clr[1];
 					Settings.ColorB = (float)clr[2];
+					break;
+				case "ResetCache":
+					Renderer.bassIntensityHistory = new List<float>(Renderer.bassIntensityHistory.Capacity);
+					Renderer.dataHistory = new List<float>(Renderer.dataHistory.Capacity);
 					break;
 				default:
 					return;
