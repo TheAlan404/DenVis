@@ -75,11 +75,7 @@ namespace DenVis
 				case "ResetSettings":
 					Settings.ResetToDefaults();
 					Program.SaveConfiguration();
-					WaveRenderer.AddWave(new WaveRenderer.Wave()
-					{
-						Stroke = 10,
-						Opacity = 1
-					});
+					WaveRenderer.AddWave();
 					socket.Send(GetBanner()); // Refresh the settings (known bug)
 					break;
 				case "AddText":
@@ -107,8 +103,24 @@ namespace DenVis
 						TextRenderer.Texts.Remove(atext);
 					}
 					break;
+				case "ClearTexts":
+					TextRenderer.Texts.Clear();
+					break;
 				case "TriggerWave":
 					WaveRenderer.AddWave();
+					break;
+				case "SideFlash":
+					switch (((string)data).ToLower())
+					{
+						case "r":
+							SideFlash.FlashRight();
+							break;
+						case "l":
+							SideFlash.FlashLeft();
+							break;
+						default:
+							break;
+					}
 					break;
 				case "SetColor":
 					JArray clr = (JArray)data;

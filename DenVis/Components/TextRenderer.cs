@@ -35,7 +35,8 @@ namespace DenVis
 
 		public static void Render(Graphics gfx)
 		{
-			foreach(Text text in Texts)
+			if(Settings.ShowFPS) gfx.DrawTextWithBackground(Font, 16, Brush, BackgroundBrush, 20, 50, $"DenVis FPS: {gfx.FPS}");
+			foreach (Text text in Texts)
 			{
 				if (text.HasBackground)
 				{

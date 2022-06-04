@@ -8,8 +8,14 @@ namespace DenVis
 {
 	public class Settings
 	{
-		[Setting("Enable Visualizer", true, "Enables the sound bar", Shortcut = 'v')]
+		[Setting("Enable Visualizer", true, "Enables the sound bar", "Features", Shortcut = 'v')]
 		public static bool Enabled = true;
+
+		[Setting("Bass Waves", false, "[BETA] Enable sound waves", "Features", Shortcut = 'b')]
+		public static bool EnableBassWaves = false;
+
+		[Setting("Enable Snow", false, "Make it rain snow", "Features", Shortcut = 's')]
+		public static bool SnowEnabled = false;
 
 		// Category: Position
 
@@ -26,16 +32,22 @@ namespace DenVis
 		[Setting("Enable Rainbow Mode", true, "Makes the visualizer gay")]
 		public static bool RainbowMode = true;
 
-		[Setting("Hue Change Speed", 0.001f, "Fine-tuning might be needed")]
-		public static float HueChangeSpeed = 0.001f;
+		[Setting("HueChangePerCoord", 5, "", Min = 1, Max = 200, Step = 1)]
+		public static float HueChangePerCoord = 5;
+
+		[Setting("HueChangeAmount", 0.01f, "", Min = 0, Max = 1, Step = 0.001f)]
+		public static float HueChangeAmount = 0.01f;
 
 		private static float _opacity = 0.7f;
 		[Setting("Opacity", 0.7f, 0, 1, "Set how visible it should be")]
 		public static float Opacity
 		{
-			get => Renderer.TCSReady.Task.IsCompleted ? Renderer.Brush.Color.A : _opacity;
+			get => IsReady() ? Renderer.Brush.Color.A : _opacity;
 			set => Renderer.SetColor(-1, -1, -1, value);
 		}
+
+		[Setting("Stroke", 5, 1, 20)]
+		public static int Stroke = 5;
 
 		[WebSocketIgnoreSetting]
 		public static float ColorR
@@ -61,6 +73,8 @@ namespace DenVis
 		[Setting("Check for updates", true, "Checks for updates when DenVis starts", "Maintenance")]
 		public static bool CheckForUpdates = true;
 
+		public static string FFMPEGArguments = ""; // Linux
+
 		// Category: Advanced
 
 		[Setting("Use Data History", true, "Use an array of previous floats to calculate maximum value", "Advanced")]
@@ -75,13 +89,34 @@ namespace DenVis
 			}
 		}
 
+		[Setting("[BETA] Use Bars", false, "", "Advanced")]
+		public static bool Bars = false;
+
+		[Setting("SkipValueAmount", 1, 1, 20)]
+		public static int SkipValueAmount = 1;
+
+		[Setting("SkipValuesSum", true)]
+		public static bool SkipValuesSum = true;
+
+		[Setting("Show FPS", false, "", "Advanced")]
+		public static bool ShowFPS = false;
+
+		private static int _fps = 30;
+		[Setting("[Experimental] FPS", 30, "[BETA] Unstable", "Advanced", Min = 1, Max = 240)]
+		public static int FPS
+		{
+			get => IsReady() ? Renderer.graphicsWindow.FPS : _fps;
+			set
+			{
+				if (IsReady()) Renderer.graphicsWindow.FPS = value;
+				_fps = value;
+			}
+		}
+
 		// Category: Bass
 
-		[Setting("Bass Waves", false, "[BETA] Enable sound waves", "Bass", Shortcut = 'b')]
-		public static bool EnableBassWaves = false;
-
-		[Setting("Range of Bass", 20, 0, 500, "[BETA] If 'Use Bass Range' is on, this will be used for the range to calculate bass", "Bass")]
-		public static int BassRange = 20;
+		[Setting("Range of Bass", 36, 0, 500, "[BETA] If 'Use Bass Range' is on, this will be used for the range to calculate bass", "Bass")]
+		public static int BassRange = 36;
 
 		[Setting("Bass sensitivity", 0.6, 0, 1, "[BETA] Percentage of loudness that determines if the current audio is bass depending on the history of bass values", "Bass", Step = 0.01f)]
 		public static float BassSensitivity = 0.6f;
@@ -120,12 +155,15 @@ namespace DenVis
 		[WebSocketIgnoreSetting]
 		public static float Sensitivity = 0.0001f;
 
-		
+		// Category: Side Flash
+
+		[Setting("Side Flash Speed", 60, 0, 255, "How fast should the side flash fade out?", "SideFlash")]
+		public static int SideFlashSpeed = 60;
+
+		[Setting("Side Flash Width", 0.5, 0, 1, "Width of the side flashes", "SideFlash", Step = 0.01f)]
+		public static float SideFlashWidthRatio = 0.5f;
 
 		// Category: Snow
-
-		[Setting("Enable Snow", false, "Make it rain snow", "Snow", Shortcut = 's')]
-		public static bool SnowEnabled = false;
 
 		[Setting("Max Font Size", 30, 1, 100, "", "Snow")]
 		public static int SnowMaxFontSize = 30;
@@ -167,12 +205,14 @@ namespace DenVis
 			}
 		}
 
-		
+
 
 
 
 		// --- Saving / Loading ---
 
+		public static bool IsReady() =>
+			Renderer.TCSReady.Task.IsCompleted;
 
 
 		public static JObject ToJSON()

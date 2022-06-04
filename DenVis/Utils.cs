@@ -1,7 +1,7 @@
-﻿using System.Drawing;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using GameOverlay.Drawing;
 
 namespace DenVis
 {
@@ -122,6 +122,23 @@ namespace DenVis
 			}
 			Console.WriteLine($"Killed {procs.Length - 1} other DenVis processes");
 		}
+
+		public static Color[] Rainbow()
+		{
+			return new[] {
+				new Color(255, 0, 0),
+				new Color(255, 154, 0),
+				new Color(208, 222, 33),
+				new Color(79, 220, 74),
+				new Color(63, 218, 216),
+				new Color(47, 201, 226),
+				new Color(28, 127, 238),
+				new Color(95, 21, 242),
+				new Color(186, 12, 248),
+				new Color(251, 7, 217),
+				new Color(255, 0, 0)
+			};
+		}
 	}
 
 
@@ -150,7 +167,7 @@ namespace DenVis
 					b = GetColorComponent(temp1, temp2, h - 1.0 / 3.0);
 				}
 			}
-			return Color.FromArgb((int)(255 * r), (int)(255 * g), (int)(255 * b));
+			return new Color((int)(255 * r), (int)(255 * g), (int)(255 * b));
 
 		}
 

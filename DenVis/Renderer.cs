@@ -13,7 +13,10 @@ namespace DenVis
 		public static GraphicsWindow graphicsWindow;
 		public static int screenW = Utils.GetDisplay().Item1;
 		public static int screenH = Utils.GetDisplay().Item2;
-		public static float pointDistance = ((int)Program.fftSize) / screenW;
+		public static float pointDistance
+		{
+			get => (((int)Program.fftSize) * Settings.SkipValueAmount) / screenW;
+		}
 
 		public static float TaskbarHeight = Program.IsWin8 ? 36 : 42;
 		public static float ScreenOffset = Program.IsWin8 ? 220 : 0;
@@ -28,6 +31,7 @@ namespace DenVis
 
 		// Graphics
 		public static SolidBrush Brush;
+		public static LinearGradientBrush GradBrush;
 		public static Font Font;
 		public static double lastHue = 0;
 
@@ -44,12 +48,12 @@ namespace DenVis
 			{
 				MeasureFPS = true,
 				PerPrimitiveAntiAliasing = true,
-				TextAntiAliasing = true
+				TextAntiAliasing = true,
 			};
 
 			graphicsWindow = new GraphicsWindow(0, 0, screenW, screenH, gfx)
 			{
-				FPS = 30,
+				FPS = Settings.FPS,
 				IsTopmost = true,
 				IsVisible = true,
 				Title = "DenVis",
@@ -61,11 +65,13 @@ namespace DenVis
 				var gfx = e.Graphics;
 				if (e.RecreateResources) Brush.Dispose();
 				Brush = gfx.CreateSolidBrush(177, 156, 217, 255);
+				GradBrush = new LinearGradientBrush(gfx, new Color(177, 156, 217));
 				Font = gfx.CreateFont("Arial", 10);
 
 				SnowRenderer.Setup(gfx);
 				TextRenderer.Setup(gfx);
 				WaveRenderer.Setup(gfx);
+				SideFlash.Setup(gfx);
 
 				TextRenderer.Add(new Text()
 				{
@@ -123,6 +129,7 @@ namespace DenVis
 			}
 			TextRenderer.Render(gfx);
 			WaveRenderer.Render(gfx);
+			SideFlash.Render(gfx);
 		}
 
 		public static void SetColor(float r, float g, float b, float a)
@@ -160,7 +167,11 @@ namespace DenVis
 			{
 				float bassIntensity = 0;
 				//gfx.DrawText(Font, 30, Brush, 20, 20, dataPart.Length.ToString());
-				for (var i = 8; i < (Settings._BassUseBassRange ? Settings.BassRange : dataPart.Length - 8); i++) bassIntensity += dataPart[i];
+				int bassRangeAmount = (Settings._BassUseBassRange ? Settings.BassRange : dataPart.Length - 8);
+				for (var i = 8; i < bassRangeAmount; i++)
+					bassIntensity += dataPart[i];
+
+				bassIntensity /= bassRangeAmount;
 
 				if (bassIntensityHistory.Capacity == bassIntensityHistory.Count) bassIntensityHistory.RemoveAt(0);
 				bassIntensityHistory.Add(bassIntensity);
@@ -188,35 +199,67 @@ namespace DenVis
 			float previousValue = 0f;
 			float xPosition = 0;
 
-			for (int i = 0; i < dataPart.Length; i++)
+			for (int i = 0; i < dataPart.Length; i += Settings.SkipValueAmount)
 			{
 				float value = dataPart[i];
+				if(Settings.SkipValuesSum &&
+					Settings.SkipValueAmount != 1 &&
+					i >= Settings.SkipValueAmount)
+				{
+					int j = Settings.SkipValueAmount - 1;
+					while (j > 0)
+					{
+						value += dataPart[i - j];
+						j--;
+					}
+					value = value / Settings.SkipValueAmount;
+				}
 
-				//value += bassSum; 
-				gfx.DrawLine(Brush,
-					// start x
-					xPosition - pointDistance,
-					// start y
-					ValueToY(previousValue),
-					// end x
-					xPosition,
-					// end y
-					ValueToY(value),
+				if (!Settings.Bars)
+				{
+					//value += bassSum; 
+					gfx.DrawLine(Brush,
+						// start x
+						xPosition - pointDistance,
+						// start y
+						ValueToY(previousValue),
+						// end x
+						xPosition,
+						// end y
+						ValueToY(value),
 
-					// stroke
-					5
-				);
+						// stroke
+						Settings.Stroke
+					);
+				}
+				else
+				{
+					gfx.DrawLine(Brush,
+						// start x
+						xPosition,
+						// start y
+						ValueToY(0),
+						// end x
+						xPosition,
+						// end y
+						ValueToY(value),
 
+						// stroke
+						Settings.Stroke
+					);
+				}
 
+				/*
 				if (Settings.RainbowMode)
 				{
 					if (lastHue > 1) lastHue = lastHue % 1;
-					lastHue += Settings.HueChangeSpeed;
-					System.Drawing.Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
+					if (i % Settings.HueChangePerCoord == 0) lastHue += Settings.HueChangeAmount;
+					Color c = ColorScale.ColorFromHSL(lastHue, 0.5, 0.5);
 					SetColor(c.R, c.G, c.B, -1);
 				}
 
 				if (Settings.ColorBassDifferiently && xPosition < Settings.BassRange) SetColor(0, 0, 0, 1);
+				*/
 
 				xPosition += pointDistance;
 				previousValue = value;

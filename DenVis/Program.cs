@@ -22,7 +22,7 @@ namespace DenVis
 	{
 		public const string DenVisVersion = "a.0.4";
 
-		public static bool IsWin8 = Environment.OSVersion.Version.Major == 6;
+		public static bool IsWin8 = OperatingSystem.IsWindows() && Environment.OSVersion.Version.Major == 6;
 
 		public static string ConfigFilepath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 		public static string ConfigFilename = ".DenVisConfiguration.json";
@@ -104,7 +104,7 @@ namespace DenVis
 
 		public static void OpenURL(string url)
 		{
-			Process.Start(new ProcessStartInfo(url.StartsWith("http") ? url : $"https://denvis.glitch.me/{url}")
+			Process.Start(new ProcessStartInfo("start", (url.StartsWith("http") ? url : $"https://denvis.glitch.me/{url}"))
 			{
 				UseShellExecute = true,
 			});
