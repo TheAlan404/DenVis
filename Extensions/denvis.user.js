@@ -4,6 +4,8 @@
 // @version      0.1
 // @description  Integrates DenVis to Youtube and other media
 // @author       TheAlan404 (Dennis)
+// @updateURL    https://github.com/TheAlan404/DenVis/raw/master/Extensions/denvis.user.js
+// @downloadURL  https://github.com/TheAlan404/DenVis/raw/master/Extensions/denvis.user.js
 // @include      http://*
 // @include      https://*
 // ==/UserScript==
@@ -64,17 +66,19 @@ const denvis = (() => {
 
     const injectYoutube = () => {
         document.addEventListener("yt-navigate-finish", (e) => {
-            let info = e.detail.response.playerResponse.videoDetails;
+            document.getElementsByTagName("video")[0].addEventListener("play", () => {
+                let info = e.detail.response.playerResponse.videoDetails;
 
-            info.author = info.author.replace("- Topic", ""); // todo, replace with splice idk
+                info.author = info.author.replace("- Topic", ""); // todo, replace with splice idk
 
-            if(config.onlyWhenHidden && !document.hidden) return;
+                if(config.onlyWhenHidden && !document.hidden) return;
 
-            denvis.send("AddText", {
-                Text: musicEmoji + " Now Playing: " + info.title + "\nby: " + info.author,
-                Expire: 7 * 1000,
-                X: 20,
-                Y: 20
+                denvis.send("AddText", {
+                    Text: musicEmoji + " Now Playing: " + info.title + "\nby: " + info.author,
+                    Expire: 7 * 1000,
+                    X: 20,
+                    Y: 20
+                });
             });
         });
     }
