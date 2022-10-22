@@ -8,6 +8,20 @@ namespace DenVis
 {
 	public class Settings
 	{
+		private static string[] CategoryList = new[]
+		{
+			"Features",
+			"Visualizer",
+			"Color",
+			"Bass",
+			"Snow",
+			"Bass-Animation",
+			"Advanced",
+            "Maintenance",
+		};
+
+		// Main Features
+
 		[Setting("Enable Visualizer", true, "Enables the sound bar", "Features", Shortcut = 'v')]
 		public static bool Enabled = true;
 
@@ -73,6 +87,7 @@ namespace DenVis
 		[Setting("Check for updates", true, "Checks for updates when DenVis starts", "Maintenance")]
 		public static bool CheckForUpdates = true;
 
+		[WebSocketIgnoreSetting]
 		public static string FFMPEGArguments = ""; // Linux
 
 		// Category: Advanced
@@ -157,10 +172,10 @@ namespace DenVis
 
 		// Category: Side Flash
 
-		[Setting("Side Flash Speed", 60, 0, 255, "How fast should the side flash fade out?", "SideFlash")]
+		//[Setting("Side Flash Speed", 60, 0, 255, "How fast should the side flash fade out?", "SideFlash")]
 		public static int SideFlashSpeed = 60;
 
-		[Setting("Side Flash Width", 0.5, 0, 1, "Width of the side flashes", "SideFlash", Step = 0.01f)]
+		//[Setting("Side Flash Width", 0.5, 0, 1, "Width of the side flashes", "SideFlash", Step = 0.01f)]
 		public static float SideFlashWidthRatio = 0.5f;
 
 		// Category: Snow
@@ -344,8 +359,13 @@ namespace DenVis
 			}
 
 			JObject root = new JObject();
-			SerializeFields(typeof(Settings), root);
-			SerializeProperties(typeof(Settings), root);
+
+			JObject sets = new JObject();
+			SerializeFields(typeof(Settings), sets);
+			SerializeProperties(typeof(Settings), sets);
+
+			root["Settings"] = sets;
+			root["Categories"] = new JArray(CategoryList);
 
 			return root;
 		}

@@ -20,7 +20,7 @@ namespace DenVis
 {
 	public static class Program
 	{
-		public const string DenVisVersion = "a.0.4";
+		public const string DenVisVersion = "a.0.5";
 
 		public static bool IsWin8 = OperatingSystem.IsWindows() && Environment.OSVersion.Version.Major == 6;
 
