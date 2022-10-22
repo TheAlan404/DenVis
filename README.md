@@ -1,12 +1,17 @@
-# DenVis
-
-Lightweight Windows audio visualizer made in C#
+<div align="center">
+  <img height="128" src="https://github.com/TheAlan404/DenVis/blob/master/DenVisIcon.png?raw=true"/>
+   
+  # DenVis
+ 
+  Lightweight Windows audio visualizer made in C#
+</div>
 
 ### Features
 
 - Audio Visualizer
-- Lots of [Settings](https://denvis.glitch.me/)
+- [Settings](https://denvis.glitch.me/)
 - Snow
+- Bass Waves
 - WebSocket API for extensions
 
 ### Installation
@@ -24,6 +29,7 @@ Pull requests/issues etc in all forms are welcome :3
 
 #### Contributors
 - [Armagan](https://github.com/TheArmagan) for visualizer stuff
+- [EmrahGK](https://github.com/EmrahGK) for the settings website
 
 ### Screenshot (old)
 
