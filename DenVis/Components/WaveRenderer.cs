@@ -33,7 +33,7 @@ namespace DenVis
 						// start y
 						wave.Y + i,
 						// end x
-						Renderer.screenW,
+						Visualizer.screenW,
 						// end y
 						wave.Y + i,
 						// stroke
@@ -58,7 +58,7 @@ namespace DenVis
 
 		public class Wave
 		{
-			public float Y = Renderer.screenH - (Renderer.ScreenOffset + Settings.yOffset + (Renderer.IsFullscreen ? 0 : Settings.IsOnTopOfTaskbar ? Renderer.TaskbarHeight : 0));
+			public float Y = Visualizer.screenH - (Visualizer.ScreenOffset + Settings.yOffset + (Visualizer.IsFullscreen ? 0 : Settings.IsOnTopOfTaskbar ? Visualizer.TaskbarHeight : 0));
 			public float Opacity = Settings.WaveOpacity;
 			public float Stroke = 5;
 		}

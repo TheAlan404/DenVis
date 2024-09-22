@@ -46,42 +46,44 @@ namespace DenVis
 		[Setting("Enable Rainbow Mode", true, "Makes the visualizer gay")]
 		public static bool RainbowMode = true;
 
-		[Setting("HueChangePerCoord", 5, "", Min = 1, Max = 200, Step = 1)]
+		//[Setting("HueChangePerCoord", 5, "", Min = 1, Max = 200, Step = 1)]
 		public static float HueChangePerCoord = 5;
 
-		[Setting("HueChangeAmount", 0.01f, "", Min = 0, Max = 1, Step = 0.001f)]
+		//[Setting("HueChangeAmount", 0.01f, "", Min = 0, Max = 1, Step = 0.001f)]
 		public static float HueChangeAmount = 0.01f;
 
 		private static float _opacity = 0.7f;
 		[Setting("Opacity", 0.7f, 0, 1, "Set how visible it should be")]
 		public static float Opacity
 		{
-			get => IsReady() ? Renderer.Brush.Color.A : _opacity;
-			set => Renderer.SetColor(-1, -1, -1, value);
+			get => IsReady() ? Visualizer.Brush.Color.A : _opacity;
+			set => Visualizer.SetColor(-1, -1, -1, value);
 		}
 
-		[Setting("Stroke", 5, 1, 20)]
+		public static int MasterOpacity = 255;
+
+        [Setting("Stroke", 5, 1, 20)]
 		public static int Stroke = 5;
 
 		[WebSocketIgnoreSetting]
 		public static float ColorR
 		{
-			get => Renderer.Brush.Color.R;
-			set => Renderer.SetColor(value, -1, -1, -1);
+			get => Visualizer.Brush.Color.R;
+			set => Visualizer.SetColor(value, -1, -1, -1);
 		}
 
 		[WebSocketIgnoreSetting]
 		public static float ColorG
 		{
-			get => Renderer.Brush.Color.G;
-			set => Renderer.SetColor(-1, value, -1, -1);
+			get => Visualizer.Brush.Color.G;
+			set => Visualizer.SetColor(-1, value, -1, -1);
 		}
 
 		[WebSocketIgnoreSetting]
 		public static float ColorB
 		{
-			get => Renderer.Brush.Color.B;
-			set => Renderer.SetColor(-1, -1, value, -1);
+			get => Visualizer.Brush.Color.B;
+			set => Visualizer.SetColor(-1, -1, value, -1);
 		}
 
 		[Setting("Check for updates", true, "Checks for updates when DenVis starts", "Maintenance")]
@@ -97,10 +99,10 @@ namespace DenVis
 		[Setting("Data History Length", 30, 1, 900, "30 = 1 second because DenVis is 30 FPS", "Advanced")]
 		public static int DataHistoryLength
 		{
-			get => Renderer.dataHistory.Capacity;
+			get => Visualizer.dataHistory.Capacity;
 			set
 			{
-				Renderer.dataHistory = new List<float>(value);
+				Visualizer.dataHistory = new List<float>(value);
 			}
 		}
 
@@ -120,10 +122,10 @@ namespace DenVis
 		[Setting("[Experimental] FPS", 30, "[BETA] Unstable", "Advanced", Min = 1, Max = 240)]
 		public static int FPS
 		{
-			get => IsReady() ? Renderer.graphicsWindow.FPS : _fps;
+			get => IsReady() ? Visualizer.graphicsWindow.FPS : _fps;
 			set
 			{
-				if (IsReady()) Renderer.graphicsWindow.FPS = value;
+				if (IsReady()) Visualizer.graphicsWindow.FPS = value;
 				_fps = value;
 			}
 		}
@@ -157,10 +159,10 @@ namespace DenVis
 		[Setting("_bassIntensityHistory", 100, 1, 900, "[BETA] 30 = 1 second because DenVis is 30 FPS", "Bass")]
 		public static int _bassIntensityHistory
 		{
-			get => Renderer.bassIntensityHistory.Capacity;
+			get => Visualizer.bassIntensityHistory.Capacity;
 			set
 			{
-				Renderer.bassIntensityHistory = new List<float>(value);
+				Visualizer.bassIntensityHistory = new List<float>(value);
 			}
 		}
 
@@ -227,7 +229,7 @@ namespace DenVis
 		// --- Saving / Loading ---
 
 		public static bool IsReady() =>
-			Renderer.TCSReady.Task.IsCompleted;
+			Visualizer.TCSReady.Task.IsCompleted;
 
 
 		public static JObject ToJSON()
@@ -340,10 +342,10 @@ namespace DenVis
 			{
 				foreach (FieldInfo fi in t.GetFields())
 				{
-					if (fi.GetCustomAttribute<WebSocketIgnoreSettingAttribute>() != null) continue;
+					if (fi.GetCustomAttribute<SettingAttribute>() == null) continue;
 					var o = fi.GetValue(null);
 					var type = o.GetType();
-					ret[fi.Name] = SerializeSetting(type, fi.GetCustomAttribute<SettingAttribute>(), fi.GetValue(null));
+                    ret[fi.Name] = SerializeSetting(type, fi.GetCustomAttribute<SettingAttribute>(), fi.GetValue(null));
 				}
 			}
 
@@ -351,7 +353,7 @@ namespace DenVis
 			{
 				foreach (PropertyInfo pi in t.GetProperties())
 				{
-					if (pi.GetCustomAttribute<WebSocketIgnoreSettingAttribute>() != null) continue;
+					if (pi.GetCustomAttribute<SettingAttribute>() == null) continue;
 					var o = pi.GetValue(null);
 					var type = o.GetType();
 					ret[pi.Name] = SerializeSetting(type, pi.GetCustomAttribute<SettingAttribute>(), pi.GetValue(null));

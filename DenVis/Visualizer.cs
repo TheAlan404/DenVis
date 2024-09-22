@@ -1,5 +1,6 @@
 ﻿using GameOverlay.Drawing;
 using GameOverlay.Windows;
+using SDX = SharpDX.Direct2D1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Timers;
 
 namespace DenVis
 {
-	public static class Renderer
+	public static class Visualizer
 	{
 		public static GraphicsWindow graphicsWindow;
 		public static int screenW = Utils.GetDisplay().Item1;
@@ -65,7 +66,12 @@ namespace DenVis
 				var gfx = e.Graphics;
 				if (e.RecreateResources) Brush.Dispose();
 				Brush = gfx.CreateSolidBrush(177, 156, 217, 255);
-				GradBrush = new LinearGradientBrush(gfx, new Color(177, 156, 217));
+				GradBrush = new LinearGradientBrush(gfx, new Color[]
+				{
+					new Color(255, 0, 0),
+					new Color(0, 255, 0),
+					new Color(0, 0, 255),
+				});
 				Font = gfx.CreateFont("Arial", 10);
 
 				SnowRenderer.Setup(gfx);
@@ -199,7 +205,10 @@ namespace DenVis
 			float previousValue = 0f;
 			float xPosition = 0;
 
-			for (int i = 0; i < dataPart.Length; i += Settings.SkipValueAmount)
+            Geometry geo = gfx.CreateGeometry();
+            geo.BeginFigure(new Point(0, ValueToY(0)), false);
+
+            for (int i = 0; i < dataPart.Length; i += Settings.SkipValueAmount)
 			{
 				float value = dataPart[i];
 				if(Settings.SkipValuesSum &&
@@ -217,8 +226,12 @@ namespace DenVis
 
 				if (!Settings.Bars)
 				{
-					//value += bassSum; 
-					gfx.DrawLine(Brush,
+					geo.AddPoint(new Point(xPosition - pointDistance, ValueToY(previousValue)));
+					geo.AddPoint(new Point(xPosition, ValueToY(value)));
+
+					/*
+                    //value += bassSum; 
+                    gfx.DrawLine(GradBrush,
 						// start x
 						xPosition - pointDistance,
 						// start y
@@ -230,11 +243,11 @@ namespace DenVis
 
 						// stroke
 						Settings.Stroke
-					);
+					);*/
 				}
 				else
 				{
-					gfx.DrawLine(Brush,
+					gfx.DrawLine(GradBrush,
 						// start x
 						xPosition,
 						// start y
@@ -248,7 +261,6 @@ namespace DenVis
 						Settings.Stroke
 					);
 				}
-
 				/*
 				if (Settings.RainbowMode)
 				{
@@ -264,6 +276,9 @@ namespace DenVis
 				xPosition += pointDistance;
 				previousValue = value;
 			}
+
+			geo.EndFigure();
+			gfx.DrawGeometry(geo, Brush, Settings.Stroke);
 
 
 			//if (bassSum > 0.02) lastHue += bassSum;

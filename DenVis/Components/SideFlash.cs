@@ -9,7 +9,7 @@ namespace DenVis
 		public static LinearGradientBrush GradientBrushRight;
 		public static SolidBrush AlphaBrush;
 
-		public static float FlashWidth = Renderer.screenW / 2;
+		public static float FlashWidth = Visualizer.screenW / 2;
 
 		public static void Setup(Graphics gfx)
 		{
@@ -35,7 +35,7 @@ namespace DenVis
 		public static void Render(Graphics gfx)
 		{
 			float startY = 0;
-			float endY = Renderer.ScreenBottom;
+			float endY = Visualizer.ScreenBottom;
 			if(LeftX > 0)
 			{
 				GradientBrushLeft.SetRange(
@@ -56,15 +56,15 @@ namespace DenVis
 			if (RightX > 0)
 			{
 				GradientBrushRight.SetRange(
-					Renderer.screenW,
+					Visualizer.screenW,
 					0,
-					Renderer.screenW - RightX, // end x
+					Visualizer.screenW - RightX, // end x
 					0 // end y
 				);
 				gfx.DrawBox2D(GradientBrushRight, GradientBrushRight,
-					Renderer.screenW - FlashWidth, // start x
+					Visualizer.screenW - FlashWidth, // start x
 					startY,
-					Renderer.screenW, // end x
+					Visualizer.screenW, // end x
 					endY, // end y
 					0);
 				RightX -= Settings.SideFlashSpeed;

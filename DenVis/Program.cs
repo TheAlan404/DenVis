@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CSCore.DSP;
 using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
+using DenVis.Renderer;
 
 
 /*
@@ -30,7 +31,7 @@ namespace DenVis
 		public const FftSize fftSize = FftSize.Fft4096;
 		public static FftProvider fftProvider;
 
-		public static NotifyIcon trayIcon;
+		public static System.Windows.Forms.NotifyIcon trayIcon;
 
 		public static void Main()
 		{
@@ -38,20 +39,22 @@ namespace DenVis
 			Utils.AllocConsole();
 #endif
 			Utils.EnsureSingleton();
-			Console.WriteLine($"Screen is ({Renderer.screenW}w, {Renderer.screenH}h)");
+			Console.WriteLine($"Screen is ({Visualizer.screenW}w, {Visualizer.screenH}h)");
 
 			SetupTrayIcon();
 
-			SoundCapture.Setup();
-			WebSocketAPI.Setup();
-			Renderer.Setup();
+			Window.Setup();
+
+			//SoundCapture.Setup();
+			//WebSocketAPI.Setup();
+			//Visualizer.Setup();
 
 			Task.Delay(-1).Wait();
 		}
 
 		public static void SetupTrayIcon()
 		{
-			trayIcon = new NotifyIcon();
+			trayIcon = new System.Windows.Forms.NotifyIcon();
 			trayIcon.Icon = new("DenVis.ico");
 			trayIcon.Text = $"DenVis {DenVisVersion}";
 			trayIcon.ContextMenuStrip = new();
@@ -61,7 +64,7 @@ namespace DenVis
 			});
 			trayIcon.ContextMenuStrip.Items.Add("Exit", null, (_sender, _args) =>
 			{
-				Renderer.graphicsWindow.Dispose();
+				Visualizer.graphicsWindow.Dispose();
 				trayIcon.Dispose();
 				Environment.Exit(0);
 			});
@@ -80,7 +83,7 @@ namespace DenVis
 				client.DefaultRequestHeaders.Add("User-Agent", "DenVis-App");
 				var response = await client.GetAsync("https://api.github.com/repos/TheAlan404/DenVis/releases");
 				var body = await response.Content.ReadAsStringAsync();
-				Console.WriteLine(body);
+				//Console.WriteLine(body);
 				JArray releases = JArray.Parse(body);
 
 				string latestVersion = (string)releases[0]["tag_name"];

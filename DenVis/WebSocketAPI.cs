@@ -129,8 +129,8 @@ namespace DenVis
 					Settings.ColorB = (float)clr[2];
 					break;
 				case "ResetCache":
-					Renderer.bassIntensityHistory = new List<float>(Renderer.bassIntensityHistory.Capacity);
-					Renderer.dataHistory = new List<float>(Renderer.dataHistory.Capacity);
+					Visualizer.bassIntensityHistory = new List<float>(Visualizer.bassIntensityHistory.Capacity);
+					Visualizer.dataHistory = new List<float>(Visualizer.dataHistory.Capacity);
 					break;
 				default:
 					return;
@@ -159,8 +159,8 @@ namespace DenVis
 
 			JObject data = new JObject();
 			data["version"] = Program.DenVisVersion;
-			data["screenW"] = Renderer.screenW;
-			data["screenH"] = Renderer.screenH;
+			data["screenW"] = Visualizer.screenW;
+			data["screenH"] = Visualizer.screenH;
 			data["win8"] = Program.IsWin8;
 			data["settings"] = Settings.ToJSONWithTypes();
 

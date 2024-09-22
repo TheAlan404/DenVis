@@ -45,7 +45,7 @@ namespace DenVis
 
 		public static void UpdateCount()
 		{
-			Graphics gfx = Renderer.graphicsWindow.Graphics;
+			Graphics gfx = Visualizer.graphicsWindow.Graphics;
 
 			if (Settings.SnowAmount == Snowflakes.Count) return;
 			if(Settings.SnowAmount > Snowflakes.Count)
@@ -95,7 +95,7 @@ namespace DenVis
 				flake.coord += flake.x_mv;
 				flake.Y += flake.SinkSpeed + extra;
 				flake.X = flake.InitialX + flake.lftrght * (float)Math.Sin(flake.coord);
-				if (flake.Y >= (Renderer.ScreenBottom - flake.Size))
+				if (flake.Y >= (Visualizer.ScreenBottom - flake.Size))
 				{
 					flake.OnGround = true;
 				}
@@ -142,7 +142,7 @@ namespace DenVis
 				FontIndex = Random.Next(Fonts.Length);
 				BrushIndex = Random.Next(Brushes.Count);
 				SinkSpeed = Settings.SnowBaseSinkSpeed * Size / 5;
-				InitialX = Random.Next(Renderer.screenW);
+				InitialX = Random.Next(Visualizer.screenW);
 				X = InitialX;
 				Y = -Size;
 
