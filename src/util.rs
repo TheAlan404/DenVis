@@ -6,6 +6,6 @@ pub fn clear(canvas: &mut Canvas<OpenGl>) {
         0,
         canvas.width(),
         canvas.height(),
-        Color::rgbaf(0.0, 0.0, 0.0, 0.3),
+        Color::rgbaf(0.0, 0.0, 0.0, 0.0),
     );
 }

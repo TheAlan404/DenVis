@@ -11,7 +11,7 @@ use glutin::{
 };
 use glutin_winit::DisplayBuilder;
 use winit::{
-    event_loop::EventLoop, monitor::{self, VideoModeHandle}, platform::windows::{WindowAttributesExtWindows, WindowExtWindows}, raw_window_handle::HasWindowHandle, window::{Fullscreen, Window, WindowAttributes, WindowButtons, WindowLevel}
+    dpi::{PhysicalPosition, PhysicalSize}, event_loop::EventLoop, monitor::{self, VideoModeHandle}, platform::windows::{WindowAttributesExtWindows, WindowExtWindows}, raw_window_handle::HasWindowHandle, window::{Fullscreen, Window, WindowAttributes, WindowButtons, WindowLevel}
 };
 
 use crate::app::Action;
@@ -24,7 +24,7 @@ pub fn create_window(
     Window,
     Surface<WindowSurface>,
 )> {
-    
+    println!("Creating window...");
 
     let mut window_attributes = WindowAttributes::default()
         .with_title(String::from("DenVis"))
@@ -32,6 +32,9 @@ pub fn create_window(
         .with_fullscreen(None)
         .with_transparent(true)
         .with_window_level(WindowLevel::AlwaysOnTop)
+        .with_position(PhysicalPosition::new(0, 0))
+        .with_inner_size(PhysicalSize::new(0, 0))
+        //.with_visible(false)
         .with_enabled_buttons(WindowButtons::empty());
 
     #[cfg(windows)]
@@ -54,10 +57,7 @@ pub fn create_window(
     let window = window.unwrap();
     window.set_cursor_hittest(false)?;
 
-    #[cfg(windows)]
-    {
-        window.set_skip_taskbar(true);
-    }
+    println!("Configuring OpenGL...");
 
     let gl_display = gl_config.display();
 
@@ -70,7 +70,7 @@ pub fn create_window(
             .unwrap()
     });
 
-    let size = window.inner_size();
+    let size = window.current_monitor().unwrap().size();
     let attrs = SurfaceAttributesBuilder::<WindowSurface>::new().build(
         window.window_handle()?.as_raw(),
         NonZeroU32::new(size.width).unwrap(),

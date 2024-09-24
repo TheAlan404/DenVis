@@ -1,4 +1,6 @@
-use std::sync::mpsc::Sender;
+use std::io::{self, Write};
+
+use crossbeam::channel::Sender;
 
 use anyhow::{anyhow, Context, Result};
 use cpal::{
@@ -7,7 +9,6 @@ use cpal::{
 };
 
 pub const AUDIO_BUFFER_SIZE: usize = 48000;
-pub type AudioBuffer = [f32; AUDIO_BUFFER_SIZE];
 
 pub fn print_devices() -> Result<()> {
     for host_id in cpal::available_hosts() {
@@ -40,7 +41,7 @@ pub fn get_output_device() -> Result<Device> {
         .ok_or(anyhow!("default_output_device None"))
 }
 
-pub fn capture_audio(dev: Device, tx: Sender<AudioBuffer>) -> Result<()> {
+pub fn audio_thread(dev: Device, audio_sender: Sender<(f32, f32)>) -> Result<()> {
     println!("Selected device: {:#?}", dev.name());
     println!("Starting to capture audio");
 
@@ -52,7 +53,12 @@ pub fn capture_audio(dev: Device, tx: Sender<AudioBuffer>) -> Result<()> {
                 sample_rate: SampleRate(48000),
             },
             move |data: &[f32], _: &_| {
-                println!(",");
+                print!("!");
+                io::stdout().flush().unwrap();
+                let lr_pairs = data.chunks_exact(2).map(|x| (x[0], x[1]));
+                for pair in lr_pairs {
+                    let _ = audio_sender.try_send(pair);
+                }
             },
             |e| {
                 eprintln!("ERROR");

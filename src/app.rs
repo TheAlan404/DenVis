@@ -1,3 +1,5 @@
+use std::sync::{Arc, RwLock};
+
 use femtovg::{renderer::OpenGl, Canvas, Color, Paint};
 use glutin::{
     context::PossiblyCurrentContext,
@@ -14,6 +16,7 @@ pub struct State {
     pub display: Display,
     pub surface: Surface<WindowSurface>,
     pub canvas: Canvas<OpenGl>,
+    pub audio_spectrum: Arc<RwLock<Vec<f32>>>,
 }
 
 impl ApplicationHandler<Action> for State {
@@ -32,8 +35,6 @@ impl ApplicationHandler<Action> for State {
         event: WindowEvent,
     ) {
         match event {
-            WindowEvent::Focused(focused) => if !focused {},
-
             WindowEvent::CloseRequested => {
                 println!("CloseRequested");
                 event_loop.exit();
