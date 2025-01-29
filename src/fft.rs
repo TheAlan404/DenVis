@@ -19,7 +19,7 @@ pub fn fft_thread(
 
     let mut fft_data = vec![Complex::default(); FFT_SIZE];
     let mut f32_scratch = vec![0.0; FFT_SIZE];
-    let mut agc_scratch = vec![0.0; FFT_SIZE];
+    // let mut agc_scratch = vec![0.0; FFT_SIZE];
 
     // Only interested in the first half since the is real data, and because
     // nyquist is a problem.

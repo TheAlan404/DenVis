@@ -5,22 +5,15 @@ use std::sync::{Arc, RwLock};
 
 use anyhow::Result;
 use app::{Action, State};
-use femtovg::{renderer::OpenGl, Canvas, Color, Renderer};
-use glutin::{
-    context::PossiblyCurrentContext,
-    prelude::GlDisplay,
-    surface::{GlSurface, Surface, WindowSurface},
-};
-use winit::{
-    dpi::PhysicalPosition,
-    event_loop::{ControlFlow, EventLoop},
-    window::Window,
-};
+use femtovg::{renderer::OpenGl, Canvas};
+use glutin::{prelude::GlDisplay, surface::GlSurface};
+use winit::event_loop::{ControlFlow, EventLoop};
 
 mod app;
 mod audio;
 mod fft;
 mod init_window;
+mod spectrum;
 mod util;
 
 fn main() -> Result<()> {
@@ -40,11 +33,7 @@ fn main() -> Result<()> {
     size.height += 1;
     let _ = window.request_inner_size(size);
 
-    canvas.set_size(
-        size.width,
-        size.height,
-        window.scale_factor() as f32
-    );
+    canvas.set_size(size.width, size.height, window.scale_factor() as f32);
     util::clear(&mut canvas);
     canvas.flush();
     surface.swap_buffers(&context)?;
@@ -58,18 +47,15 @@ fn main() -> Result<()> {
     let audio_spectrum = Arc::new(RwLock::new(vec![]));
 
     let dev = audio::get_output_device()?;
-    let _ = std::thread::spawn(|| audio::audio_thread(dev, audio_sender));
+    // let _ = std::thread::spawn(|| audio::audio_thread(dev, audio_sender));
+    let _stream = audio::audio_thread(dev, audio_sender)?;
     let _ = std::thread::spawn(|| fft::fft_thread(audio_recv, fft_sender));
     let arc_spectrum = audio_spectrum.clone();
-    let _ = std::thread::spawn(move || {
-        loop {
-            let vec = fft_recv.recv().unwrap();
-            let mut wg = arc_spectrum.write().unwrap();
-            *wg = vec;
-        }
+    let _ = std::thread::spawn(move || loop {
+        let vec = fft_recv.recv().unwrap();
+        let mut wg = arc_spectrum.write().unwrap();
+        *wg = vec;
     });
-
-
 
     //
 
@@ -82,6 +68,7 @@ fn main() -> Result<()> {
         surface,
         window,
         audio_spectrum,
+        drawables: vec![],
     };
 
     println!("Running event loop...");

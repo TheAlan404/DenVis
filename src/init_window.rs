@@ -11,7 +11,7 @@ use glutin::{
 };
 use glutin_winit::DisplayBuilder;
 use winit::{
-    dpi::{PhysicalPosition, PhysicalSize}, event_loop::EventLoop, monitor::{self, VideoModeHandle}, platform::windows::{WindowAttributesExtWindows, WindowExtWindows}, raw_window_handle::HasWindowHandle, window::{Fullscreen, Window, WindowAttributes, WindowButtons, WindowLevel}
+    dpi::{PhysicalPosition, PhysicalSize}, event_loop::EventLoop, platform::windows::WindowAttributesExtWindows, raw_window_handle::HasWindowHandle, window::{Window, WindowAttributes, WindowButtons, WindowLevel}
 };
 
 use crate::app::Action;
